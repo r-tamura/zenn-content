@@ -58,7 +58,14 @@ Object.keysの仕様[^2]は以下のように定義されています
 > 2. Let keyList be ? EnumerableOwnProperties(obj, key).
 > 3. Return CreateArrayFromList(keyList).
 
-1.の `ToObject` は Object Typeの値を渡した場合、そのまま渡した値を返すだけです。2.の `EnumerableOwnProperties(obj, key)` という、プロパティキーを列挙していそうなところを見ていきます。
+1.の `ToObject()` は Object Typeの値を渡した場合、そのまま渡した値を返すだけです。2.の `EnumerableOwnProperties(obj, key)` という、プロパティキーを列挙していそうなところを見ていきます。
+
+:::details ToObject? EnumerableOwnProperties?
+これらは*Abstract Operation*と呼ばれるもので、ECMAScriptの仕様の中だけで利用される関数のようなものです。
+
+- [ECMAScript仕様を読むのに必要な知識 - ダイジェスト版](https://speakerdeck.com/syumai/ecmascriptshi-yang-wodu-munonibi-yao-nazhi-shi-daiziesutoban?slide=24)
+- [5.2.1 Abstract Operations](https://tc39.es/ecma262/#sec-algorithm-conventions-abstract-operations)
+  :::
 
 `EnumerableOwnProperties()` の定義[^3]の最初はこうなっていて
 
