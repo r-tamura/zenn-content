@@ -50,6 +50,8 @@ console.log(Object.keys(o));
 - 整数でない数値で指定したプロパティは宣言順に順序になっている
 - シンボル型のプロパティが出力結果に含まれていない
 
+この辺りが仕様で定義されているかを確認していきます。
+
 ## Object.keys()の仕様を追っていく
 
 Object.keysの仕様[^2]は以下のように定義されています
@@ -121,8 +123,7 @@ ECMASCript 2015で `[[OwnPropertyKeys]]()`の順番が定義[^8]され、`interg
 
 > The mechanics and order of enumerating the properties is not specified
 
-なので、`EnumerableOwnNames()`を利用している、`Object.keys()`, `Object.values()`, `Object.entries()`, `JSON.stringify()`, `JSON.parse()`については順番が仕様上決まっていませんでした。
-[互換性の問題を考慮してこうなっていた](https://stackoverflow.com/questions/30076219/does-es6-introduce-a-well-defined-order-of-enumeration-for-object-properties/30919039#30919039:~:text=While%20ES6%20/%20ES2015%20adds%20property%20order%2C%20it%20does%20not%20require%20for%2Din%2C%20Object.keys%2C%20or%20JSON.stringify%20to%20follow%20that%20order%2C%20due%20to%20legacy%20compatibility%20concerns.)そうです。
+なので、`EnumerableOwnNames()`を利用している、`Object.keys()`, `Object.values()`, `Object.entries()`, `JSON.stringify()`, `JSON.parse()`については順番が仕様上決まっていませんでした。[互換性の問題を考慮してこうなっていた](https://stackoverflow.com/questions/30076219/does-es6-introduce-a-well-defined-order-of-enumeration-for-object-properties/30919039#30919039:~:text=While%20ES6%20/%20ES2015%20adds%20property%20order%2C%20it%20does%20not%20require%20for%2Din%2C%20Object.keys%2C%20or%20JSON.stringify%20to%20follow%20that%20order%2C%20due%20to%20legacy%20compatibility%20concerns.)そうです。
 
 ECMASCript 2020で[for-inの順番を仕様で定義する](https://github.com/tc39/proposal-for-in-order)ということになり、`EnumerableOwnNames()`から上記6.の並び替えの処理がなくなりました。
 これによって`Object.keys()`等の出力するプロパティキーの順番が仕様上定義されるようになりました。
