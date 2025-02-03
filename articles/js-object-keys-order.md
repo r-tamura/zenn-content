@@ -10,7 +10,7 @@ JavaScriptには[Object.keys()](https://developer.mozilla.org/en-US/docs/Web/Jav
 
 ```js
 const o = { a: 1, b: 2 };
-const keys = Object.keys();
+const keys = Object.keys(o);
 console.log(keys); // ['a', 'b']
 ```
 
