@@ -14,9 +14,9 @@ const keys = Object.keys(o);
 console.log(keys); // ['a', 'b']
 ```
 
-同じオブジェクトをこの関数に渡すとこの関数が返すプロパティキー配列の順序は常に同じようなのですが、仕様でどう定義されているのだろうと気になったので、ECMASCript仕様を読む練習がてら、調べてみました。
+同じオブジェクトをこの関数に渡すとこの関数が返すプロパティキー配列の順序は常に同じようなのですが、仕様でどう定義されているのだろうと気になったので、ECMAScript仕様を読む練習がてら、調べてみました。
 
-参照した仕様は記事作成時点で最新標準のECMASCript 2024[^1]です。
+参照した仕様は記事作成時点で最新標準のECMAScript 2024[^1]です。
 
 ## 結論
 
@@ -117,8 +117,8 @@ Object.keysの仕様[^2]は以下のように定義されています
 
 ## 以前は仕様上順序が保証されていなかった
 
-ECMASCript 5.1の `Object.keys()` の仕様ではfor-inと同じ順序にしなければならないという記述がありますが、for-inの仕様には順序の定義はありません。
-ECMASCript 2015で `[[OwnPropertyKeys]]()`の順序が定義[^8]され、`integer index`として扱えるプロパティキーは数値的な昇順、それ以外の文字列はプロパティの作成順になりました。
+ECMAScript 5.1の `Object.keys()` の仕様ではfor-inと同じ順序にしなければならないという記述がありますが、for-inの仕様には順序の定義はありません。
+ECMAScript 2015で `[[OwnPropertyKeys]]()`の順序が定義[^8]され、`integer index`として扱えるプロパティキーは数値的な昇順、それ以外の文字列はプロパティの作成順になりました。
 しかし、`EnumerableOwnNames (O)`[^9]の *6.* では以下のように`[[Enumerate]]`内部メソッドと同様の順序になるように並べ替えを行うようになっています。
 
 > 2\. Let ownKeys be O.\[\[OwnPropertyKeys\]\]().
@@ -131,12 +131,12 @@ ECMASCript 2015で `[[OwnPropertyKeys]]()`の順序が定義[^8]され、`intege
 
 なので、`EnumerableOwnNames()`を利用している、`Object.keys()`, `Object.values()`, `Object.entries()`, `JSON.stringify()`, `JSON.parse()`については順序が仕様上決まっていませんでした。[互換性の問題を考慮してこうなっていた](https://stackoverflow.com/questions/30076219/does-es6-introduce-a-well-defined-order-of-enumeration-for-object-properties/30919039#30919039:~:text=While%20ES6%20/%20ES2015%20adds%20property%20order%2C%20it%20does%20not%20require%20for%2Din%2C%20Object.keys%2C%20or%20JSON.stringify%20to%20follow%20that%20order%2C%20due%20to%20legacy%20compatibility%20concerns.)そうです。
 
-ECMASCript 2020で[for-inの順序を仕様で定義する](https://github.com/tc39/proposal-for-in-order)ということになり、`EnumerableOwnNames()`から上記*6.* の並び替えの処理がなくなりました。
+ECMAScript 2020で[for-inの順序を仕様で定義する](https://github.com/tc39/proposal-for-in-order)ということになり、`EnumerableOwnNames()`から上記*6.* の並び替えの処理がなくなりました。
 これによって`Object.keys()`等の出力するプロパティキーの順序が仕様上定義されるようになりました。
 
 ## 最初に列挙される数値範囲の変更
 
-最初に列挙される数値の対象がECMASCript2015以降[integer index](https://tc39.es/ecma262/2024/#integer-index)だったものが、ECMASCript 2019で[array index](https://tc39.es/ecma262/2024/#array-index)に変更されています。
+最初に列挙される数値の対象がECMAScript2015以降[integer index](https://tc39.es/ecma262/2024/#integer-index)だったものが、ECMAScript 2019で[array index](https://tc39.es/ecma262/2024/#array-index)に変更されています。
 integer indexは $0$ ~ $2^{53}-1$ の範囲、array indexは $0$ ~ $2^{32-2}$ の範囲、という数値の範囲の違いなのですが、なぜその変更が入ったのかという理由はこちらの記事に記載されていました。
 
 https://zenn.dev/pixiv/articles/b6393aad961221
