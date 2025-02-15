@@ -42,6 +42,7 @@ dc948eb27d5150c72b09750e856c015024666bd1
 - [Git - Git Objects (git-scm.com)](https://git-scm.com/book/en/v2/Git-Internals-Git-Objects)
 
 [^1]: [gitで特定のcommitバージョン/リビジョンを指すコレをなんと呼ぶか問題](https://qiita.com/bigwheel/items/0b331451558637ee29b3)
+
 [^2]: [GitHub 用語集](https://docs.github.com/ja/get-started/learning-about-github/github-glossary#%E3%82%B3%E3%83%9F%E3%83%83%E3%83%88-id)
 
 ## Reference
@@ -171,22 +172,71 @@ Gに対して
 
 ## Reflog
 
-- HEADの変更履歴
-- コミットやブランチを切り替えた際などに更新される
-- `git reflog` コマンドで履歴を確認できる
-- `HEAD@{n}` の形式でnはHEADの変更履歴でn番目前の変更を表す
-- 例
+:::details CHANGELOG 2025/2/15
+HEADの変更ログだけを意味していると記載してましたが、HEADだけではないと@nosuke23さんより[コメント](https://zenn.dev/r_tamura/articles/git-references#comment-b5b9e4b275a844)で指摘をいただきましたので修正しました。
+:::
 
-```bash
-$ git reflog
-24aab06 (HEAD -> main) HEAD@{0}: merge topic: Merge made by the 'ort' strategy.
-61ecf98 HEAD@{1}: commit: C
-0146958 HEAD@{2}: checkout: moving from topic to main
-7de4317 (topic) HEAD@{3}: commit: F
+- Reference logs
+- refの変更ログ
+- ログのエントリはある時点でrefが参照していたコミットを指す
+- `git reflog` コマンドでログの確認やログの操作ができる
+- ログの実態は`.git/logs/`以下に保存されている
+
+### `git reflog`コマンド
+
+サブコマンドやrefを引数として指定できるが、何も指定しない場合ではshowサブコマンド、HEADをrefとして指定した場合と同じ扱いになる。つまり、下記の(1)、(2)のコマンドは等価になる。
+
+```text
+git reflog # (1)
+git reflog show HEAD # (2)
 ```
 
-- `git reset` で誤ったそうさを戻すのに利用できる
-  - [【git】git reflogでgitの履歴に対する過去の操作を管理する - Ren's blog (hatenablog.com)](https://rennnosukesann.hatenablog.com/entry/2018/03/06/231439)
+`git reflog show [<ref>]`コマンドは指定されたrefに対するreflogを閲覧するコマンドで`git reflog`で主に使われるコマンドだと思う。
+他のサブコマンドとして reflogを持つref一覧を出力する`git reflog list`, 古いログを削除する`git reflog expire`などがある。
+
+mainブランチで2つコミット、topicブランチを作成して切り替えた場合、`git reflog`は以下のような出力になる。
+
+```text
+$ git reflog
+d43dd39 (HEAD -> topic, main) HEAD@{0}: checkout: moving from main to topic
+d43dd39 (HEAD -> topic, main) HEAD@{1}: commit: B
+48669b2 HEAD@{2}: commit (initial): A
+```
+
+ここで、各行のShort SHA-1はHEAD変更後の参照先のコミットのハッシュになっている。
+mainブランチ、topicブランチの変更ログも確認できる。
+
+```text
+$ git reflog main
+d43dd39 (HEAD -> topic, main) main@{0}: commit: B
+48669b2 main@{1}: commit (initial): A
+
+$ git reflog topic
+d43dd39 (HEAD -> topic, main) topic@{0}: branch: Created from HEAD
+```
+
+### 以前の状態に戻ることができる
+
+誤ったgit操作をしてしまった場合に、Reflogを使って、誤った操作をしてしまった前の状態に戻ることができる。
+例えば、`git reset --hard`してしまっても、reflogには`git reset`前のHEADの参照先コミットが確認できるので
+
+```text
+$ git reset --hard HEAD^ # 誤ってgit resetしてしまった
+$ git reflog
+f68d5ca HEAD@{0}: reset: moving to HEAD^ # <-- git reset後のHEAD
+23a0caa HEAD@{1}: commit: E              # <-- git reset直前のHEAD
+f68d5ca HEAD@{2}: commit: D
+607bed5 HEAD@{3}: commit: C
+
+# 直前のHEADの状態に戻ることができる
+$ git reset --hard HEAD@{1}
+# or
+$ git reset --hard 23a0caa
+```
+
+### 参考
+
+- [git-reflog - Manage reflog information](https://git-scm.com/docs/git-reflog)
 
 ## Revision
 
