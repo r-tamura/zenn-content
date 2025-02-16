@@ -141,38 +141,9 @@ fetch = +refs/heads/*:refs/remotes/origin/*
 - [Gitの内側 - Refspec](https://git-scm.com/book/ja/v2/Git%E3%81%AE%E5%86%85%E5%81%B4-Refspec)
 - [Git - リモートブランチ](https://git-scm.com/book/ja/v2/Git-%E3%81%AE%E3%83%96%E3%83%A9%E3%83%B3%E3%83%81%E6%A9%9F%E8%83%BD-%E3%83%AA%E3%83%A2%E3%83%BC%E3%83%88%E3%83%96%E3%83%A9%E3%83%B3%E3%83%81)
 
-## Relative ref
-
-- あるコミットからの相対的なコミットを参照するref
-- `~{n}` では第一の親コミットをn番目前までたどる
-- mergeによって親コミットが複数あるときに、第一の親コミット以外を選択したい場合は `^{n}` で第nの親を選択する
-- 例
-
-```text
-HEAD~1 # HEADが指すコミットから1つ前のコミット（2つ親がある場合は第一の親コミット）
-HEAD^2 # HEADが指すコミットの第二の親コミットを指す
-main^2~2 # HEADが指すコミットから1つ前のさらに2つ前のコミット（第二の親ルート）
-
-Gに対して
- - Dは第一の親コミット
- - Fは第二の親コミット
-
- HEAD^2~2  HEAD~1
- HEAD~3    HEAD^1
-     ▼     ▼
---A--B--C--D--G <--HEAD, main
-      \      /
-       E----F <-- HEAD^2
-```
-
-### 参考
-
-- [What's the difference between HEAD^ and HEAD~ in Git? - Stack Overflow](https://stackoverflow.com/questions/2221658/whats-the-difference-between-head-and-head-in-git)
-- [git-rev-parse - Pick out and massage parameters](https://git-scm.com/docs/git-rev-parse#Documentation/git-rev-parse.txt-emltrevgtemegemHEADv1510em:~:text=Parent%20commits%20are%20ordered%20left%2Dto%2Dright)
-
 ## Reflog
 
-:::details CHANGELOG 2025/2/15
+:::details CHANGELOG 2025/2/16
 HEADの変更ログだけを意味していると記載してましたが、HEADだけではないと@nosuke23さんより[コメント](https://zenn.dev/r_tamura/articles/git-references#comment-b5b9e4b275a844)で指摘をいただきましたので修正しました。
 :::
 
@@ -191,7 +162,7 @@ git reflog # (1)
 git reflog show HEAD # (2)
 ```
 
-`git reflog show [<ref>]`コマンドは指定されたrefに対するreflogを閲覧するコマンドで`git reflog`で主に使われるコマンドだと思う。
+`git reflog show [<ref>]`コマンドは指定されたrefに対するreflogを閲覧するコマンド。
 他のサブコマンドとして reflogを持つref一覧を出力する`git reflog list`, 古いログを削除する`git reflog expire`などがある。
 
 mainブランチで2つコミット、topicブランチを作成して切り替えた場合、`git reflog`は以下のような出力になる。
@@ -204,7 +175,7 @@ d43dd39 (HEAD -> topic, main) HEAD@{1}: commit: B
 ```
 
 ここで、各行のShort SHA-1はHEAD変更後の参照先のコミットのハッシュになっている。
-mainブランチ、topicブランチの変更ログも確認できる。
+`git reflog <branch>`で、ブランチの変更ログも確認できる。
 
 ```text
 $ git reflog main
@@ -217,8 +188,8 @@ d43dd39 (HEAD -> topic, main) topic@{0}: branch: Created from HEAD
 
 ### 以前の状態に戻ることができる
 
-誤ったgit操作をしてしまった場合に、Reflogを使って、誤った操作をしてしまった前の状態に戻ることができる。
-例えば、`git reset --hard`してしまっても、reflogには`git reset`前のHEADの参照先コミットが確認できるので
+誤ったgit操作をしてしまった場合に、Reflogを使って、誤った操作の前の状態に戻ることができる。
+例えば、`git reset --hard`してしまっても、reflogには`git reset`前のHEADの参照先コミットが残っているので、もう一度`git reset`を使って元に戻すことができる。
 
 ```text
 $ git reset --hard HEAD^ # 誤ってgit resetしてしまった
@@ -240,19 +211,101 @@ $ git reset --hard 23a0caa
 
 ## Revision
 
-- これ自体はRefではなく、Commit HashやRefを使ったクエリシステムのようなもので、Gitオブジェクトを参照できる記法
-- 単一のコミットだけでなく複数のコミットを指したりもする（Refは単一のコミットに対するエイリアス）
+:::details CHANGELOG 2025/2/16
+revisionとgitrevisionsを混同していましたが、revisionはcommitを一意に示すものであると @nosuke23 さんより[コメント](https://zenn.dev/r_tamura/articles/git-references#comment-b5b9e4b275a844)で指摘をいただきましたので修正しました。
+:::
+
+- 一意のコミットを指す（=コミットと同義）
+
+### 参考
+
+- https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefrevisionarevision
+
+## gitrevisions
+
+- いろいろなコマンドが引数としてrevision parameterを受け取るが、コマンドや表記によってそれが指すものが変わる
+  - 単一のコミット
+  - 指定されたコミットから到達可能な複数のコミット (例: `git log`)
+  - ツリー(tree)やブロブ(blob) (例: `git show`, `git push`)
 - `git rev-parse` コマンドでどのようなCommit Hashとして解決されるかが確認できる
 
 ### 例
 
-- **Short SHA-1**
-  - 他に同じプレフィックスをもつSHA1が存在しなければ、SHA1ハッシュの一部でもフルSHA1ハッシュとして解決される
+- Short SHA-1
 
-```bash
-$ git rev-parse ae13719
-ae137196659150446b94f8dacc5549d50ccf8414
-```
+  - 他に同じプレフィックスをもつSHA1が存在しなければ、SHA1ハッシュの一部でもフルSHA1ハッシュとして解決される
+  - `git rev-parse`コマンドでフルSHA1が取得できる
+
+  ```bash
+  $ git rev-parse ae13719
+  ae137196659150446b94f8dacc5549d50ccf8414
+  ```
+
+- `@`
+
+  - `@`が単独で利用されると、HEADのエイリアスを意味する
+
+  ```text
+  $ git rev-parse @
+  a1ace7478533b9fa20938f0f231f43275b7c1ddd
+
+  $ git rev-parse HEAD
+  a1ace7478533b9fa20938f0f231f43275b7c1ddd
+  ```
+
+- `<refname>@{<n>}`
+
+  - `refname`の`n`番前を表す
+
+  ```text
+  $ git log --oneline --format='%h %s'
+  a1ace74 C  # <-- HEAD
+  7045d92 B  # <-- HEAD@{1}
+  60e5dac A  # <-- HEAD@{2}
+  $ git rev-parse HEAD@{2}
+  60e5dacad70de9cc1577580dfe370dc103c0f1af
+  ```
+
+- `<rev>@~<n>`, `<rev>@^<n>`
+
+  - あるコミットからの相対的なコミットを参照するref
+  - `~{n}` では第一の親コミットをn番目前までたどる
+  - mergeによって親コミットが複数あるときに、第一の親コミット以外を選択したい場合は `^{n}` で第nの親を選択する
+  - 例
+
+  ```text
+  HEAD~1 # HEADが指すコミットから1つ前のコミット（2つ親がある場合は第一の親コミット）
+  HEAD^2 # HEADが指すコミットの第二の親コミットを指す
+  main^2~2 # HEADが指すコミットから1つ前のさらに2つ前のコミット（第二の親ルート）
+
+  Gに対して
+  - Dは第一の親コミット
+  - Fは第二の親コミット
+
+  HEAD^2~2  HEAD~1
+  HEAD~3    HEAD^1
+      ▼     ▼
+  --A--B--C--D--G <--HEAD, main
+        \      /
+        E----F <-- HEAD^2
+  ```
+
+- `<rev>:<path>`
+
+  - `<rev>`が[tree-ish](https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddeftree-ishatree-ishalsotreeish)オブジェクトを指すとき、そのオブジェクト内のpathにあるブロブかツリー
+
+  - `git show HEAD:README.md`はHEADが指すコミットのREADME.mdファイルの内容を表示する
+  - 特定のコミットであるファイルがどういう状態だったかを確認するのに利用できる
+
+  - rev-parseから得られるSHA-1 Hashがブロブを指している
+
+  ```text
+  $ git rev-parse HEAD:README.md
+  f80e74b29035d60c1a82c6b3aadf65edb35ca3b1
+
+  $ git cat-file -t f80e74b29035d60c1a82c6b3aadf65edb35ca3b1
+  blob
+  ```
 
 - Commit Ranges
   - `git log`や`git rev-list`はリビジョンを受け取るとそこからたどり着けるコミットの一覧を返す
@@ -268,11 +321,11 @@ ae137196659150446b94f8dacc5549d50ccf8414
 
 ### 参考
 
-- [How do Git revisions and references relate to each other? - Stack Overflow](https://stackoverflow.com/questions/73145810/how-do-git-revisions-and-references-relate-to-each-other)
+- https://git-scm.com/docs/gitrevisions
 
 ## おわりに
 
-Gitの多くのコマンドでコミットを参照することがあるが、コミットのSHA1ハッシュ値以外にも参照の仕方をしてっいると役立つと思う。
+Gitの多くのコマンドでコミットを参照することがあるが、Commit SHA-1 Hash値以外にも参照の仕方を知っていると役立つと思う。
 
 ## 全体の参考
 
